@@ -1,0 +1,14 @@
+# Entorno virtual
+venv/
+ENV/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Otros
+.env
+.vscode/
+*.log
