@@ -1,6 +1,27 @@
 
 # Importamos Streamlit y la abrevia como "st"
 import streamlit as st
+import json
+import os
+
+# Archivo para persistencia de datos
+DATA_FILE = "datos.json"
+
+# Función para cargar datos desde el archivo
+def cargar_datos():
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, Exception):
+            return {}
+    return {}
+
+# Función para guardar datos al archivo
+def guardar_datos():
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(st.session_state.bloques, f, indent=4, ensure_ascii=False)
+
 
 # Función convertir segundos a sistema: h:m:s
 def segundos_a_tiempo(segundos):
@@ -19,7 +40,7 @@ st.write("Agregue sus bloques(días) y el tiempo que ocupa en cada tarea dentro 
 
 # Inicializar almacenamiento de bloques
 if "bloques" not in st.session_state:
-    st.session_state.bloques = {}
+    st.session_state.bloques = cargar_datos()
 
 #todo: SIDEBAR -> CREACIÓN DE BLOQUES
 with st.sidebar:
@@ -35,6 +56,7 @@ with st.sidebar:
 
             if nuevo_bloque and nuevo_bloque not in st.session_state.bloques:
                 st.session_state.bloques[nuevo_bloque] = []
+                guardar_datos()
                 st.success(f"Bloque '{nuevo_bloque}' agregado correctamente")
 
             elif nuevo_bloque in st.session_state.bloques:
@@ -78,6 +100,7 @@ with st.form("form_tiempo", clear_on_submit=True):
 
         else:
             st.session_state.bloques[bloque_seleccionado].append(tiempo_total)
+            guardar_datos()
             st.success("Tiempo agregado correctamente")
 st.divider()
 
@@ -97,6 +120,7 @@ for bloque, tiempos in st.session_state.bloques.items():
 
                 if st.button("ELIMINAR", key=f"del_{bloque}_{i+j}"):
                     st.session_state.bloques[bloque].pop(i+j)
+                    guardar_datos()
                     st.rerun()
 
     # Total del tiempo de 1 bloque
@@ -107,6 +131,7 @@ for bloque, tiempos in st.session_state.bloques.items():
     #? Eliminar bloques
     if st.button("ELIMINAR BLOQUE", key=f"del_block_{bloque}"):
         del st.session_state.bloques[bloque]
+        guardar_datos()
         st.rerun()
     st.write("---")
 
